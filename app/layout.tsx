@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Campus SaaS",
-  description: "Campus-focused social discovery for university students.",
+  title: {
+    default: "Compuce — your campus, closer",
+    template: "%s · Compuce",
+  },
+  description:
+    "A campus social experience for finding friendship, dating, or both.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full bg-background text-foreground">{children}</body>
     </html>
   );
 }

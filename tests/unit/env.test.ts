@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPublicSupabaseEnv } from "../../src/lib/env";
+import { getAppBaseUrl, getPublicSupabaseEnv } from "../../src/lib/env";
 
 describe("getPublicSupabaseEnv", () => {
   it("reports missing variable names without exposing values", () => {
@@ -61,5 +61,31 @@ describe("getPublicSupabaseEnv", () => {
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "legacy-anon-key",
       }),
     ).toThrow(/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+  });
+});
+
+describe("getAppBaseUrl", () => {
+  it("accepts a trusted application origin", () => {
+    expect(getAppBaseUrl("https://campus.example")).toBe(
+      "https://campus.example",
+    );
+  });
+
+  it("rejects missing and invalid application URLs", () => {
+    expect(() => getAppBaseUrl(undefined)).toThrow(
+      /APP_URL is required/,
+    );
+
+    expect(() => getAppBaseUrl("javascript:private-value")).toThrow(
+      /valid http\(s\) URL/,
+    );
+
+    expect(
+      () => getAppBaseUrl("https://user:password@campus.example"),
+    ).toThrow(/valid http\(s\) URL/);
+
+    expect(() => getAppBaseUrl("https://campus.example/app")).toThrow(
+      /valid http\(s\) URL/,
+    );
   });
 });

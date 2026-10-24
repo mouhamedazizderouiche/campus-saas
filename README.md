@@ -1,25 +1,51 @@
-# Campus SaaS
+# Compuce
 
-Campus SaaS is a campus-focused social discovery platform. The initial MVP targets one university, with a data model intended to support additional universities later. The repository provides a Next.js starter, architecture guidance, and Supabase client foundations. Authentication flows, database schema, authorization policies, and product features are not implemented.
+Compuce is a campus social platform prototype for student community, campus activities, and finding friendship, dating, or both. It combines Supabase email authentication with a campus dashboard and clearly labeled UI previews.
+
+## Current experience
+
+- Sign-up, sign-in, sign-out, email confirmation, session refresh, and protected app pages use Supabase Auth.
+- `/dashboard` is the authenticated Campus Home, with quick links, campus updates, and upcoming events. Campus updates and events are fictional, explicitly labeled development fixtures; production has honest unavailable states until a real backend is connected.
+- `/community` is a feed preview. Its development sample posts are fictional and cannot be posted to, reacted to, or replied to.
+- `/discover` is the dedicated matching preview. In development it shows clearly labeled fictional illustration fixtures; those fixtures are never returned in production. Like and Pass only advance the local preview and are not saved.
+- `/events` shows event discovery cards in development with fictional dates, locations, and organizers. The details disclosure works locally; no event data or RSVP is stored.
+- `/matches` shows an honest empty state. It does not invent or claim real matches.
+- `/messages` is a visual conversation prototype. Sample bubbles are labeled as such, and the disabled composer cannot send or save messages.
+- `/profile` is a local-only editing preview. Validation, interests, intention selection, and a selected image preview work in the current page, but no profile or photo is saved or uploaded.
+
+The app has no profile, likes, matches, conversations, messages, blocks, reports, campus membership, community posts, or events tables; no migrations or RLS policies exist. Do not use it with real student data or treat a signed-in user as authorized to access student profiles.
 
 ## Prerequisites
 
-- Node.js 22 or newer (the Supabase client requires 22; installed Next.js requires 20.9)
+- Node.js 22 or newer (the installed Supabase JavaScript client requires 22; Next.js requires 20.9)
 - npm
+- A Supabase project for live authentication
 
-A real Supabase project is needed to initialize either Supabase client. Credentials are not needed to render the current starter page, run tests, or create a production build.
+## Configure Supabase
 
-## Local development
+1. Copy `.env.example` to `.env.local` and set the Supabase project URL and publishable key. Keep `APP_URL` set to the trusted application origin. Do not commit `.env.local`, and never put a secret/service-role key in a `NEXT_PUBLIC_` variable.
+2. In Supabase **Authentication → Providers → Email**, enable email/password sign-in and email confirmation.
+3. In **Authentication → URL Configuration**, set the Site URL to the app origin and allow `${APP_URL}/auth/callback` as a redirect URL.
+4. In **Authentication → Email Templates → Confirm signup**, replace the default confirmation URL link with this user-confirmed token-hash link:
+
+   ```html
+   <h2>Confirm your email</h2>
+   <p>Press the button below to finish signing up.</p>
+   <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email&amp;next=%2Fdashboard">Confirm email address</a></p>
+   ```
+
+   The `/auth/confirm` GET page does not consume the token. The user presses the button to submit it to a Server Action, which verifies it with Supabase and writes the session cookie. Without the custom template, Supabase's default one-time confirmation link continues to use the PKCE callback and may be consumed by email scanners or fail when opened in a browser without the verifier cookie.
+
+The Site URL and `APP_URL` should point to the same app origin. Keep the callback redirect allowlisted because sign-up still passes that redirect URL to Supabase.
+
+## Run locally
 
 ```powershell
 npm install
-Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Before using a Supabase client, replace the URL and publishable-key placeholders in `.env.local` with values from your Supabase project. Never add secret or service-role keys to `NEXT_PUBLIC_` variables. `.env.local` and other real environment files are ignored by Git; `.env.example` is the committed template.
-
-Open [http://localhost:3000](http://localhost:3000). The existing route is `app/page.tsx`.
+Open [http://localhost:3000](http://localhost:3000), create an account, then confirm your email using the custom email template above. The public landing page and production build work without real Supabase credentials; live authentication requires a configured Supabase project.
 
 ## Available scripts
 
@@ -30,15 +56,16 @@ Open [http://localhost:3000](http://localhost:3000). The existing route is `app/
 - `npm run build` — create a production build
 - `npm run start` — serve a production build
 
-## Supabase foundation
+## Product backend still required
 
-`src/lib/supabase/client.ts` creates a browser client; `src/lib/supabase/server.ts` creates a request-scoped server client using Next.js cookies. Both validate the public URL and publishable key only when the factory is called. This setup does not implement sign-in, session verification, authorization, database security, or RLS. Session refresh through a Next.js Proxy is deferred until authentication flows are introduced.
+Before real discovery or social data is introduced, implement and review:
 
-## Architecture and security
+- `schools` and `profiles` with explicit campus membership and visibility/consent fields
+- Directional `likes` and atomic mutual-match creation with uniqueness constraints
+- Match-scoped `conversations` and participant-authorized `messages`
+- `blocks` and `reports` with restricted moderation access
+- Private profile-photo storage and upload validation
+- RLS for every user-data table and storage bucket, plus server-side authorization on every action
+- Disposable-project tests for owner, unrelated user, blocked user, match participant, and moderator access
 
-- [Architecture](docs/architecture.md) describes module boundaries and request flow.
-- [Database design](docs/database-design.md) describes the planned multi-school PostgreSQL schema.
-- [Security](docs/security.md) documents the threat model and controls required before launch.
-- [ADR 0001](docs/adr/0001-modular-monolith.md) records the architectural decision.
-
-The database design is documentation only. No database migration, RLS policy, or production integration is configured. Do not use this scaffold with real student data.
+See [database design](docs/database-design.md) for the proposed schema, [architecture](docs/architecture.md) for module boundaries, and [security](docs/security.md) for current controls and remaining requirements. The schema document is a proposal and has not been migrated.

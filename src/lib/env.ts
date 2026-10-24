@@ -28,6 +28,36 @@ export type PublicSupabaseEnvironmentInput = {
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
 };
 
+export function hasPublicSupabaseEnv(environment: PublicSupabaseEnvironmentInput) {
+  return Boolean(
+    environment.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      environment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim(),
+  );
+}
+
+export function getAppBaseUrl(value: string | undefined) {
+  if (!value?.trim()) {
+    throw new Error("APP_URL is required for email confirmation callbacks.");
+  }
+
+  try {
+    const url = new URL(value);
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      url.username !== "" ||
+      url.password !== "" ||
+      url.pathname !== "/" ||
+      url.search !== "" ||
+      url.hash !== ""
+    ) {
+      throw new Error();
+    }
+    return url.origin;
+  } catch {
+    throw new Error("APP_URL must be a valid http(s) URL.");
+  }
+}
+
 /** Validate public Supabase settings without including their values in errors. */
 export function getPublicSupabaseEnv(environment: PublicSupabaseEnvironmentInput) {
   const result = publicSupabaseEnvSchema.safeParse(environment);
