@@ -23,7 +23,9 @@ Each feature should own its schemas, domain types, and operations where those ar
 
 These are intended ownership boundaries, not a mandate to create empty directories. Create feature code alongside the first implemented use case.
 
-## Request and data flow
+## Intended request and data flow
+
+When product operations are implemented, requests should follow this path:
 
 1. A route renders a Server Component by default.
 2. A form or route handler parses untrusted input with a feature-owned runtime schema.
@@ -32,7 +34,7 @@ These are intended ownership boundaries, not a mandate to create empty directori
 5. PostgreSQL RLS independently checks the row-level authorization boundary. Sensitive multi-row transitions should use a reviewed database function/transaction with explicit grants and policies.
 6. The route returns only the minimum data needed by the UI.
 
-Do not treat this flow as implemented: Supabase, auth, validation, and RLS are not configured in the current starter.
+The public environment validator and browser/server Supabase client factories are implemented in `src/lib/`. Authentication flows, session refresh, validation of product inputs, and RLS are not configured. Client factories validate settings only when called, so the starter route can render and build without credentials.
 
 ## Server and client boundaries
 

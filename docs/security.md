@@ -2,7 +2,7 @@
 
 ## Current status
 
-This repository is a Next.js starter. It has no authentication, Supabase client, database schema, RLS policy, profile/photo storage, or moderation workflow. The controls below are requirements for implementation, not claims about existing protection. Do not use this scaffold with real student data.
+This repository is a Next.js starter with browser and request-scoped Supabase client factories. It has no authentication flow, session refresh Proxy, database schema, RLS policy, profile/photo storage, or moderation workflow. The controls below are requirements for implementation, not claims about existing protection. Do not use this scaffold with real student data.
 
 ## Threat model
 
@@ -26,7 +26,7 @@ Use private storage buckets for student photos. Issue short-lived, authorized ac
 
 ## Secrets and environment
 
-The checked-in `.env.example` contains placeholders for `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Those public values identify the project and are not authorization secrets. Never put Supabase secret/service-role keys in `NEXT_PUBLIC_` variables or browser code. Validate required variables on the server when adding the integration, and report missing variable names without printing values. Keep actual `.env*` files out of Git; `.env.example` is intentionally allowed.
+The checked-in `.env.example` contains placeholders for `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Those public values identify the project and are not authorization secrets. `src/lib/env.ts` validates them when a client factory is called and reports variable names without their values. Never put Supabase secret/service-role keys in `NEXT_PUBLIC_` variables or browser code. Keep actual `.env*` files out of Git; `.env.example` is intentionally allowed. The current client foundation does not verify user identity, refresh sessions through a Proxy, or enforce authorization.
 
 ## Reporting, abuse prevention, and account deletion
 
